@@ -61,17 +61,49 @@
             
             <h3>@Franek_3</h3>
             <p>MaZeTaLa</p>
-    <!-- Przycisk dla filmu nr 1 -->
-<button class="like-button" data-video-id="film_1" onclick="toggleLike(this)">
-    <span class="heart">♡</span> Lajkuj
+    <!-- Przycisk z licznikiem -->
+<button id="likeBtn" onclick="toggleLike()" style="padding: 10px 20px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: white;">
+  ❤️ Polub: <span id="likeCount">0</span>
 </button>
-<span id="like-count-film_1" class="like-count">0</span>
 
-<!-- Przycisk dla filmu nr 2 (przykład) -->
-<!-- <button class="like-button" data-video-id="film_2" onclick="toggleLike(this)">
-    <span class="heart">♡</span> Lajkuj
-</button>
-<span id="like-count-film_2" class="like-count">0</span> -->
+<script>
+  // Klucz pod którym dane będą zapisane w przeglądarce
+  const STORAGE_KEY = 'video_like_status';
+
+  function initLikes() {
+    const likeCountElem = document.getElementById('likeCount');
+    const btn = document.getElementById('likeBtn');
+    
+    // Pobierz zapisany stan z localStorage
+    const isLiked = localStorage.getItem(STORAGE_KEY) === 'true';
+    
+    if (isLiked) {
+      likeCountElem.innerText = "1";
+      btn.style.background = "#ffcccc"; // Kolor po polubieniu
+    }
+  }
+
+  function toggleLike() {
+    const likeCountElem = document.getElementById('likeCount');
+    const btn = document.getElementById('likeBtn');
+    const isCurrentlyLiked = localStorage.getItem(STORAGE_KEY) === 'true';
+
+    if (isCurrentlyLiked) {
+      // Usuń polubienie
+      localStorage.setItem(STORAGE_KEY, 'false');
+      likeCountElem.innerText = "0";
+      btn.style.background = "white";
+    } else {
+      // Dodaj polubienie
+      localStorage.setItem(STORAGE_KEY, 'true'); // Zapisuje stan na stałe
+      likeCountElem.innerText = "1";
+      btn.style.background = "#ffcccc";
+    }
+  }
+
+  // Uruchom przy starcie strony
+  initLikes();
+</script>
 
 <iframe
   src="https://player.cloudinary.com/embed/?cloud_name=dz7zamv9m&public_id=VID_20260129_121600814_e9dpyy"
