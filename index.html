@@ -10,15 +10,25 @@
         #player-wrapper { width: 100%; height: 100%; border: none; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Nakładka z profilówką i napisami */
-        .overlay { position: absolute; bottom: 50px; left: 20px; right: 90px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); }
+        /* Nakładka dolna */
+        .overlay { position: absolute; bottom: 50px; left: 20px; right: 90px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 5px rgba(0,0,0,1); }
         .profile-section { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-        .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #222; }
+        
+        /* Naprawa profilówki pod Firefoxa */
+        .profile-pic { 
+            width: 55px; 
+            height: 55px; 
+            border-radius: 50%; 
+            border: 2px solid white; 
+            object-fit: cover; 
+            background: #333;
+            display: inline-block;
+        }
         
         .owner { font-weight: bold; font-size: 1.2rem; color: white; }
         .filename { font-size: 1rem; opacity: 0.9; color: #fff; margin-top: 2px; }
 
-        /* Przyciski z boku */
+        /* Przyciski */
         .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
         .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.6); }
         .btn-random { background: #ff0050; }
@@ -32,10 +42,10 @@
     
     <div class="overlay">
         <div class="profile-section">
-            <img class="profile-pic" src="https://drive.google.com/uc?export=view&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
+            <img class="profile-pic" src="https://lh3.googleusercontent.com/d/1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
             <div id="owner" class="owner">@Wczytywanie...</div>
         </div>
-        <div id="filename" class="filename">Wczytywanie nazwy...</div>
+        <div id="filename" class="filename">Wczytywanie...</div>
     </div>
 
     <div class="side-bar">
@@ -69,7 +79,6 @@
         newIframe.allow = "autoplay";
         wrapper.appendChild(newIframe);
 
-        // Wyświetlanie danych z Twojego nowego kodu bota
         document.getElementById('owner').innerText = "@" + (video.owner || "Uczeń");
         document.getElementById('filename').innerText = video.name || "Bez nazwy";
     }
@@ -83,7 +92,7 @@
         tmp.select();
         document.execCommand('copy');
         document.body.removeChild(tmp);
-        alert("Link skopiowany!");
+        alert("Skopiowano link!");
     }
 
     window.onload = loadVideos;
