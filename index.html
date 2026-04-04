@@ -22,8 +22,7 @@
         .filename { font-size: 1rem; opacity: 0.9; color: #fff; margin-top: 2px; }
 
         .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
-        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.6); transition: 0.1s; }
-        .btn:active { transform: scale(0.9); }
+        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.6); }
         .btn-random { background: #ff0050; }
         .btn-share { background: #555; font-size: 20px; }
     </style>
@@ -50,11 +49,10 @@
 <script>
     const url = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec";
     
-    // TYMCZASOWO: Każdy ma to samo ID zdjęcia (Twoje Xbox 360)
-    // Gdy klasa wybierze swoje, po prostu podmienisz te ID poniżej.
+    // --- TUTAJ WPISUJESZ TYLKO ID ZDJĘCIA ---
     const profilePhotos = {
-        "Klasa 2015": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ", 
-        "Uczeń": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"
+        "klasa 2015": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ", 
+        "Franek Łuczak": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"
     };
 
     const defaultAvatarID = "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"; 
@@ -86,12 +84,10 @@
         document.getElementById('owner').innerText = "@" + rawOwner;
         document.getElementById('filename').innerText = video.name || "Film";
 
-        // NAPRAWA OBRAZKA (Używamy formatu, który Firefox lubi bardziej)
+        // TO JEST TEN LINK, KTÓREGO POWINIENEM UŻYĆ OD RAZU:
         const avatarImg = document.getElementById('user-avatar');
         let photoID = profilePhotos[rawOwner] || defaultAvatarID;
-        
-        // Próbujemy wczytać zdjęcie przez bezpośredni link
-        avatarImg.src = "https://lh3.googleusercontent.com/d/" + photoID;
+        avatarImg.src = "https://drive.google.com/thumbnail?sz=w500&id=" + photoID;
     }
 
     function shareVideo() {
