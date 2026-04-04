@@ -167,6 +167,11 @@
         const f = bazaFilmow[n];
         const frame = document.getElementById('videoFrame');
         
+        if (f.id) { // Tutaj sprawdzamy czy bot przysłał "id"
+            frame.src = "https://drive.google.com/file/d/" + f.id + "/preview";
+            // ... reszta kodu
+        }
+        
         // Budujemy link podglądu z ID (kluczowe dla uniknięcia 'undefined')
         if (f.id) {
             frame.src = "https://drive.google.com/file/d/" + f.id + "/preview";
