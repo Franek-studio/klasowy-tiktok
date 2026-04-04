@@ -3,20 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Klasowy TikTok</title>
+    <title>Klasowy TikTok 🎲</title>
     <style>
+        /* RESET I BAZA */
         body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; font-family: sans-serif; overflow: hidden; }
-        .video-container { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        iframe { width: 100%; height: 100%; border: none; background: black; }
+        .video-container { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
         
-        /* Napisy na dole */
-        .overlay { position: absolute; bottom: 40px; left: 20px; right: 80px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        .owner { font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; }
-        .filename { font-size: 1rem; opacity: 0.9; }
+        /* Iframe dynamiczny dla Snapchata */
+        #player-wrapper { width: 100%; height: 100%; border: none; }
+        iframe { width: 100%; height: 100%; border: none; }
 
-        /* Przyciski z boku */
+        /* OPISY NA DOLE */
+        .overlay { position: absolute; bottom: 40px; left: 20px; right: 80px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        
+        /* NOWA SEKCJA PROFILÓWKI */
+        .profile-section { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        
+        /* Styl dla stałej profilówki (kółko) */
+        .profile-pic { 
+            width: 50px; 
+            height: 50px; 
+            border-radius: 50%; 
+            border: 2px solid white; 
+            object-fit: cover; 
+            background: #333; /* tło, gdyby zdjęcie się nie załadowało */
+        }
+        
+        .owner { font-weight: bold; font-size: 1.2rem; }
+        .filename { font-size: 1rem; opacity: 0.9; margin-top: 2px; }
+
+        /* PRZYCISKI Z BOKU */
         .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; z-index: 20; }
-        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: transform 0.1s; }
+        .btn:active { transform: scale(0.9); }
         .btn-random { background: #ff0050; }
         .btn-share { background: #555; font-size: 20px; }
     </style>
@@ -24,10 +43,13 @@
 <body>
 
 <div class="video-container">
-    <iframe id="player" src="" allow="autoplay"></iframe>
+    <div id="player-wrapper"></div>
     
     <div class="overlay">
-        <div id="owner" class="owner"></div>
+        <div class="profile-section">
+            <img class="profile-pic" src="https://drive.google.com/uc?export=view&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ" alt="avatar">
+            <div id="owner" class="owner"></div>
+        </div>
         <div id="filename" class="filename"></div>
     </div>
 
@@ -38,6 +60,7 @@
 </div>
 
 <script>
+    // Twój link do bota (bota zostawiamy, nie niszczymy go!)
     const url = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec";
     let videos = [];
     let currentVideoId = "";
@@ -46,24 +69,30 @@
         try {
             const response = await fetch(url);
             videos = await response.json();
-            nextVideo();
-        } catch (e) {
-            console.error("Błąd ładowania danych z bota");
-        }
+            if (videos.length > 0) nextVideo();
+        } catch (e) { console.error("Błąd ładowania danych z bota"); }
     }
 
     function nextVideo() {
         if (videos.length === 0) return;
+        
         const video = videos[Math.floor(Math.random() * videos.length)];
         currentVideoId = video.id;
         
-        // Ustawienie źródła filmu
-        document.getElementById('player').src = "https://drive.google.com/file/d/" + video.id + "/preview";
+        const wrapper = document.getElementById('player-wrapper');
         
-        // PRÓBA DOPASOWANIA NAZW (Bot może wysyłać różne klucze)
-        // Jeśli 'owner' nie działa, sprawdza 'author', jeśli 'name' nie działa, sprawdza 'opis'
+        // --- "PANCERNY" TRIK DLA SNAPCHATA (Zostawiamy, bo działa!) ---
+        // Kasujemy starą ramkę i tworzymy nową, żeby ominąć cache Snapa.
+        wrapper.innerHTML = ""; 
+        const newIframe = document.createElement('iframe');
+        newIframe.src = "https://drive.google.com/file/d/" + video.id + "/preview";
+        newIframe.allow = "autoplay";
+        wrapper.appendChild(newIframe);
+        // ---------------------------------------------------------
+
+        // Pobieranie nazw z bota (Używamy tego, co wysyła bot)
         const displayOwner = video.owner || video.author || video.bio || "Użytkownik";
-        const displayName = video.name || video.opis || video.filename || "";
+        const displayName = video.name || video.filename || "";
 
         document.getElementById('owner').innerText = "@" + displayOwner;
         document.getElementById('filename').innerText = displayName;
@@ -84,8 +113,10 @@
         alert("Skopiowano link do filmu!");
     }
 
+    // Start przy ładowaniu
     window.onload = loadVideos;
 </script>
 
 </body>
 </html>
+
