@@ -4,24 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Klasowy TikTok 🎲</title>
-
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="icon" type="image/png" href="icon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
-
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
-        .container { position: relative; width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; background: #000; }
-        iframe { width: 100%; height: 100%; border: none; display: none; }
+        .container { position: relative; width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; background: #000; display: flex; align-items: center; justify-content: center; }
+        
+        iframe, #imageContent { width: 100%; height: 100%; border: none; display: none; object-fit: contain; }
+
         .overlay { position: absolute; bottom: 40px; left: 15px; right: 80px; z-index: 10; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); pointer-events: none; }
-        .user-bio { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: #00f2ea; }
-        .video-desc { font-size: 0.95rem; opacity: 0.9; }
+        .profile-section { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .profile-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #333; }
+        .user-bio { font-weight: bold; font-size: 1.1rem; color: #fff; }
+        .video-desc { font-size: 0.95rem; opacity: 0.9; margin-left: 5px; }
+        
         .side-bar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
-        .circle-btn { width: 55px; height: 55px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .circle-btn { width: 55px; height: 55px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s; }
+        .circle-btn:active { transform: scale(0.9); }
         .btn-shuffle { background: #ff0050; color: white; }
         .btn-share { background: #00f2ea; color: #000; }
-        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #111; z-index: 100; }
+        
+        #loader { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #111; z-index: 100; flex-direction: column; }
         .spinner { border: 4px solid #333; border-left-color: #ff0050; width: 40px; height: 40px; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
@@ -31,13 +32,17 @@
 <div class="container">
     <div id="loader">
         <div class="spinner"></div>
-        <p>Pobieranie hitów...</p>
+        <p>Ładowanie klasowych hitów...</p>
     </div>
     
     <iframe id="videoFrame" allow="autoplay"></iframe>
+    <img id="imageContent" src="" alt="">
     
     <div class="overlay">
-        <div id="userBio" class="user-bio"></div>
+        <div class="profile-section">
+            <img id="userImg" class="profile-pic" src="" alt="">
+            <div id="userBio" class="user-bio"></div>
+        </div>
         <div id="videoDesc" class="video-desc"></div>
     </div>
 
@@ -48,7 +53,6 @@
 </div>
 
 <script>
-    // TWÓJ SPRAWDZONY LINK DO BOTA
     const BOT_URL = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec"; 
 
     let bazaFilmow = [];
@@ -56,43 +60,55 @@
 
     async function pobierzFilmy() {
         try {
-            console.log("Łączenie z botem...");
             const r = await fetch(BOT_URL);
             bazaFilmow = await r.json();
-            console.log("Pobrano danych:", bazaFilmow.length);
-            
             if (bazaFilmow.length > 0) {
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('videoFrame').style.display = 'block';
                 losujFilm();
             } else {
-                document.getElementById('loader').innerHTML = "<p>Folder jest pusty!<br>Wrzuć filmy na Dysk Google.</p>";
+                document.getElementById('loader').innerText = "Folder jest pusty!";
             }
         } catch (e) { 
-            console.error("Błąd bazy:", e);
-            document.getElementById('loader').innerHTML = "<p>Błąd połączenia!<br>Sprawdź czy bot jest wdrożony jako 'Każdy'.</p>"; 
+            document.getElementById('loader').innerText = "Błąd bazy! Sprawdź wdrożenie bota."; 
         }
     }
 
     function losujFilm() {
         if (bazaFilmow.length === 0) return;
+        
         let n;
-        do { n = Math.floor(Math.random() * bazaFilmow.length); } while (n === ostatni && bazaFilmow.length > 1);
+        do { n = Math.floor(Math.random() * bazaFilmow.length); } 
+        while (n === ostatni && bazaFilmow.length > 1);
+        
         ostatni = n;
         const f = bazaFilmow[n];
         const frame = document.getElementById('videoFrame');
+        const img = document.getElementById('imageContent');
         
-        if (f.id) {
+        frame.style.display = 'none';
+        img.style.display = 'none';
+        frame.src = "";
+
+        if (f.type === "video") {
             frame.src = "https://drive.google.com/file/d/" + f.id + "/preview";
-            document.getElementById('userBio').innerText = f.bio;
-            document.getElementById('videoDesc').innerText = f.opis;
+            frame.style.display = 'block';
+        } else {
+            img.src = "https://drive.google.com/uc?export=view&id=" + f.id;
+            img.style.display = 'block';
         }
+
+        document.getElementById('userBio').innerText = f.bio;
+        document.getElementById('videoDesc').innerText = f.opis;
+        document.getElementById('userImg').src = f.photo;
     }
 
     function shareVideo() {
-        const frame = document.getElementById('videoFrame');
-        if (navigator.share) { navigator.share({ title: 'Klasowy TikTok', url: frame.src }); } 
-        else { alert("Link: " + frame.src); }
+        const url = document.getElementById('videoFrame').src || document.getElementById('imageContent').src;
+        if (navigator.share) { 
+            navigator.share({ title: 'Klasowy TikTok', url: url }); 
+        } else { 
+            alert("Skopiuj link: " + url); 
+        }
     }
 
     window.onload = pobierzFilmy;
