@@ -1,16 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Klasowy TikTok</title>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; font-family: sans-serif; overflow: hidden; }
         .video-container { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         iframe { width: 100%; height: 100%; border: none; }
-        .overlay { position: absolute; bottom: 50px; left: 20px; z-index: 10; pointer-events: none; }
-        .owner { font-weight: bold; font-size: 1.2rem; }
-        .btn-random { position: absolute; right: 20px; bottom: 100px; width: 60px; height: 60px; border-radius: 50%; border: none; background: #ff0050; color: white; font-size: 30px; cursor: pointer; z-index: 20; }
+        
+        /* Napisy na dole */
+        .overlay { position: absolute; bottom: 40px; left: 20px; right: 80px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        .owner { font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; }
+        .filename { font-size: 1rem; opacity: 0.9; }
+
+        /* Przyciski z boku */
+        .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; z-index: 20; }
+        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        .btn-random { background: #ff0050; }
+        .btn-share { background: #555; font-size: 20px; }
     </style>
 </head>
 <body>
@@ -20,15 +28,19 @@
     
     <div class="overlay">
         <div id="owner" class="owner"></div>
-        <div id="filename"></div>
+        <div id="filename" class="filename"></div>
     </div>
 
-    <button class="btn-random" onclick="nextVideo()">🎲</button>
+    <div class="side-bar">
+        <button class="btn btn-share" onclick="shareVideo()">🔗</button>
+        <button class="btn btn-random" onclick="nextVideo()">🎲</button>
+    </div>
 </div>
 
 <script>
     const url = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec";
     let videos = [];
+    let currentVideoId = "";
 
     async function loadVideos() {
         const response = await fetch(url);
@@ -39,9 +51,18 @@
     function nextVideo() {
         if (videos.length === 0) return;
         const video = videos[Math.floor(Math.random() * videos.length)];
+        currentVideoId = video.id;
+        
         document.getElementById('player').src = "https://drive.google.com/file/d/" + video.id + "/preview";
         document.getElementById('owner').innerText = "@" + video.owner;
         document.getElementById('filename').innerText = video.name;
+    }
+
+    function shareVideo() {
+        if (!currentVideoId) return;
+        const shareUrl = "https://drive.google.com/file/d/" + currentVideoId + "/view";
+        navigator.clipboard.writeText(shareUrl);
+        alert("Skopiowano link do filmu!");
     }
 
     window.onload = loadVideos;
