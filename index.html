@@ -20,8 +20,7 @@
         .user-bio { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: #00f2ea; }
         .video-desc { font-size: 0.95rem; opacity: 0.9; }
         .side-bar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
-        .circle-btn { width: 55px; height: 55px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s; }
-        .circle-btn:active { transform: scale(0.9); }
+        .circle-btn { width: 55px; height: 55px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .btn-shuffle { background: #ff0050; color: white; }
         .btn-share { background: #00f2ea; color: #000; }
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #111; z-index: 100; }
@@ -51,6 +50,7 @@
 </div>
 
 <script>
+    // --- LINK DO TWOJEGO BOTA ---
     const BOT_URL = "https://script.google.com/macros/s/AKfycbzTobg3X0phtucqRfwKJ1iXCB9nBmLyxqxo_89MUc0g6-CYjLDtfrmLbaXOyMeAgAcsZg/exec"; 
 
     let bazaFilmow = [];
@@ -66,7 +66,7 @@
                 document.getElementById('videoFrame').style.display = 'block';
                 losujFilm();
             } else {
-                document.getElementById('loader').innerText = "Folder na Dysku Google jest pusty!";
+                document.getElementById('loader').innerText = "Folder jest pusty!";
             }
         } catch (e) { 
             document.getElementById('loader').innerText = "Błąd bazy! Sprawdź wdrożenie bota."; 
@@ -85,20 +85,14 @@
         const f = bazaFilmow[n];
         const frame = document.getElementById('videoFrame');
         
+        // Sprawdzamy czy bot przysłał pole 'id'
         if (f.id) {
-            // Czyścimy opisy na sekundę, żeby ładnie się odświeżyły
-            document.getElementById('userBio').innerText = "";
-            document.getElementById('videoDesc').innerText = "";
-            
-            // Ustawiamy nowe źródło
             frame.src = "https://drive.google.com/file/d/" + f.id + "/preview";
-            
-            // Wypełniamy dane
             document.getElementById('userBio').innerText = f.bio;
             document.getElementById('videoDesc').innerText = f.opis;
             console.log("Ładuję film ID:", f.id);
         } else {
-            console.error("Błąd: Obiekt filmu nie posiada pola 'id'!");
+            console.error("Bot nie wysłał pola 'id'. Sprawdź kod bota i zrób NOWE WDROŻENIE.");
         }
     }
 
@@ -107,12 +101,11 @@
         if (navigator.share) { 
             navigator.share({ title: 'Klasowy TikTok', url: frame.src }); 
         } else { 
-            alert("Skopiuj link do filmu: " + frame.src); 
+            alert("Skopiuj link: " + frame.src); 
         }
     }
 
     window.onload = pobierzFilmy;
 </script>
-
 </body>
 </html>
