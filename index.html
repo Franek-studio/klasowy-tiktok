@@ -5,59 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Klasowy TikTok 🎲</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
-        .container { position: relative; width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; background: #000; display: flex; align-items: center; justify-content: center; }
-        
-        iframe, #imageContent { width: 100%; height: 100%; border: none; display: none; object-fit: contain; }
+        /* RESET I PODSTAWOWY WYGLĄD */
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            background: #000; 
+            color: white; 
+            font-family: sans-serif; 
+            overflow: hidden; 
+        }
 
-        .overlay { position: absolute; bottom: 40px; left: 15px; right: 80px; z-index: 10; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); pointer-events: none; }
-        .profile-section { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .profile-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #333; }
-        .user-bio { font-weight: bold; font-size: 1.1rem; color: #fff; }
-        .video-desc { font-size: 0.95rem; opacity: 0.9; margin-left: 5px; }
+        /* KONTENER NA ŚRODKU */
+        .container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 450px; 
+            height: 100vh; 
+            margin: 0 auto; 
+            background: #000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
         
-        .side-bar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
-        .circle-btn { width: 55px; height: 55px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s; }
-        .circle-btn:active { transform: scale(0.9); }
-        .btn-shuffle { background: #ff0050; color: white; }
-        .btn-share { background: #00f2ea; color: #000; }
+        /* FILMY I ZDJĘCIA - PEŁNY EKRAN */
+        iframe, #imageContent { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            display: none; 
+            object-fit: contain; 
+        }
+
+        /* NAPISY NA DOLE (BEZ PROFILÓWEK) */
+        .overlay { 
+            position: absolute; 
+            bottom: 40px; 
+            left: 15px; 
+            right: 80px; 
+            z-index: 10; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9); 
+            pointer-events: none; 
+        }
+        .user-bio { 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            display: block; 
+            margin-bottom: 5px; 
+            color: #fff;
+        }
+        .video-desc { 
+            font-size: 1rem; 
+            opacity: 0.9; 
+            color: #eee;
+        }
         
-        #loader { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #111; z-index: 100; flex-direction: column; }
-        .spinner { border: 4px solid #333; border-left-color: #ff0050; width: 40px; height: 40px; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* PRZYCISK LOSOWANIA */
+        .side-bar { 
+            position: absolute; 
+            right: 15px; 
+            bottom: 100px; 
+            z-index: 20; 
+        }
+        .btn-shuffle { 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%; 
+            border: none; 
+            background: #ff0050; 
+            color: white; 
+            font-size: 30px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-shuffle:active {
+            transform: scale(0.9);
+        }
+        
+        /* EKRAN ŁADOWANIA */
+        #loader { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: #000; 
+            z-index: 100; 
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="loader">
-        <div class="spinner"></div>
-        <p>Ładowanie klasowych hitów...</p>
-    </div>
+    <div id="loader">Wczytywanie filmów klasowych...</div>
     
     <iframe id="videoFrame" allow="autoplay"></iframe>
     <img id="imageContent" src="" alt="">
     
     <div class="overlay">
-        <div class="profile-section">
-            <img id="userImg" class="profile-pic" src="" alt="">
-            <div id="userBio" class="user-bio"></div>
-        </div>
+        <span id="userBio" class="user-bio"></span>
         <div id="videoDesc" class="video-desc"></div>
     </div>
 
     <div class="side-bar">
-        <button class="circle-btn btn-share" onclick="shareVideo()">🔗</button>
-        <button class="circle-btn btn-shuffle" onclick="losujFilm()">🎲</button>
+        <button class="btn-shuffle" onclick="losujFilm()">🎲</button>
     </div>
 </div>
 
 <script>
+    // Twój link do bota w wersji 6 (lub ostatniej działającej)
     const BOT_URL = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec"; 
 
     let bazaFilmow = [];
-    let ostatni = -1;
 
+    // Pobieranie listy z Dysku Google
     async function pobierzFilmy() {
         try {
             const r = await fetch(BOT_URL);
@@ -69,48 +136,39 @@
                 document.getElementById('loader').innerText = "Folder jest pusty!";
             }
         } catch (e) { 
-            document.getElementById('loader').innerText = "Błąd bazy! Sprawdź wdrożenie bota."; 
+            document.getElementById('loader').innerText = "Błąd bazy danych!"; 
         }
     }
 
+    // Funkcja losująca film lub zdjęcie
     function losujFilm() {
         if (bazaFilmow.length === 0) return;
         
-        let n;
-        do { n = Math.floor(Math.random() * bazaFilmow.length); } 
-        while (n === ostatni && bazaFilmow.length > 1);
-        
-        ostatni = n;
-        const f = bazaFilmow[n];
+        const f = bazaFilmow[Math.floor(Math.random() * bazaFilmow.length)];
         const frame = document.getElementById('videoFrame');
         const img = document.getElementById('imageContent');
         
+        // Reset widoku
         frame.style.display = 'none';
         img.style.display = 'none';
         frame.src = "";
 
         if (f.type === "video") {
+            // Stary, sprawdzony sposób wyświetlania wideo
             frame.src = "https://drive.google.com/file/d/" + f.id + "/preview";
             frame.style.display = 'block';
         } else {
+            // Sposób na wyświetlanie zdjęć
             img.src = "https://drive.google.com/uc?export=view&id=" + f.id;
             img.style.display = 'block';
         }
 
+        // Ustawienie napisów
         document.getElementById('userBio').innerText = f.bio;
         document.getElementById('videoDesc').innerText = f.opis;
-        document.getElementById('userImg').src = f.photo;
     }
 
-    function shareVideo() {
-        const url = document.getElementById('videoFrame').src || document.getElementById('imageContent').src;
-        if (navigator.share) { 
-            navigator.share({ title: 'Klasowy TikTok', url: url }); 
-        } else { 
-            alert("Skopiuj link: " + url); 
-        }
-    }
-
+    // Start przy ładowaniu strony
     window.onload = pobierzFilmy;
 </script>
 </body>
