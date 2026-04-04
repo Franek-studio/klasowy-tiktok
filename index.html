@@ -10,22 +10,16 @@
         #player-wrapper { width: 100%; height: 100%; border: none; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        .overlay { position: absolute; bottom: 40px; left: 20px; right: 80px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        .profile-section { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-        
-        .profile-pic { 
-            width: 55px; 
-            height: 55px; 
-            border-radius: 50%; 
-            border: 2px solid white; 
-            object-fit: cover; 
-            background: #222;
-        }
+        /* Nakładka z profilówką i napisami */
+        .overlay { position: absolute; bottom: 50px; left: 20px; right: 90px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); }
+        .profile-section { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #222; }
         
         .owner { font-weight: bold; font-size: 1.2rem; color: white; }
-        .filename { font-size: 0.9rem; opacity: 0.8; margin-top: 2px; color: #eee; }
+        .filename { font-size: 1rem; opacity: 0.9; color: #fff; margin-top: 2px; }
 
-        .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 18px; z-index: 20; }
+        /* Przyciski z boku */
+        .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
         .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.6); }
         .btn-random { background: #ff0050; }
         .btn-share { background: #555; font-size: 20px; }
@@ -41,7 +35,7 @@
             <img class="profile-pic" src="https://drive.google.com/uc?export=view&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
             <div id="owner" class="owner">@Wczytywanie...</div>
         </div>
-        <div id="filename" class="filename"></div>
+        <div id="filename" class="filename">Wczytywanie nazwy...</div>
     </div>
 
     <div class="side-bar">
@@ -60,9 +54,7 @@
             const response = await fetch(url);
             videos = await response.json();
             if (videos.length > 0) nextVideo();
-        } catch (e) { 
-            document.getElementById('owner').innerText = "@Błąd_Połączenia";
-        }
+        } catch (e) { document.getElementById('owner').innerText = "@Błąd_Połączenia"; }
     }
 
     function nextVideo() {
@@ -77,17 +69,9 @@
         newIframe.allow = "autoplay";
         wrapper.appendChild(newIframe);
 
-        // --- INTELIGENTNE WYKRYWANIE AUTORA ---
-        // 1. Sprawdzamy czy bot wysłał 'owner'
-        // 2. Jeśli nie, sprawdzamy 'author'
-        // 3. Jeśli nie, piszemy "Uczeń" (żeby nie było pusto)
-        let autor = video.owner || video.author || video.user || "Uczeń";
-        
-        // Zabezpieczenie przed napisem "undefined"
-        if (autor === "undefined" || !autor) autor = "Uczeń";
-
-        document.getElementById('owner').innerText = "@" + autor;
-        document.getElementById('filename').innerText = video.name || "Klasowe wideo";
+        // Wyświetlanie danych z Twojego nowego kodu bota
+        document.getElementById('owner').innerText = "@" + (video.owner || "Uczeń");
+        document.getElementById('filename').innerText = video.name || "Bez nazwy";
     }
 
     function shareVideo() {
