@@ -4,35 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Klasowy TikTok 🎲</title>
-
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
-
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
         .container { position: relative; width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; background: #111; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        .overlay { position: absolute; bottom: 40px; left: 15px; right: 80px; z-index: 10; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); }
+        video { width: 100%; height: 100%; object-fit: cover; display: none; } /* Ukryty na starcie */
+        .overlay { position: absolute; bottom: 40px; left: 15px; right: 80px; z-index: 10; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); pointer-events: none; }
         .user-bio { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
         .video-desc { font-size: 0.95rem; opacity: 0.9; }
         .side-bar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
         .circle-btn { width: 55px; height: 55px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; }
         .btn-shuffle { background: #ff0050; color: white; }
         .btn-share { background: #00f2ea; color: #000; }
-        #loader { position: absolute; text-align: center; z-index: 5; }
+        #loader { position: absolute; text-align: center; z-index: 50; background: #111; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="loader">Ładowanie filmów...</div>
-    <video id="videoPlayer" loop playsinline></video>
+    <div id="loader">
+        <div style="border: 4px solid #333; border-left-color: #ff0050; width: 40px; height: 40px; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <p>Szukam filmów ze Snapa...</p>
+    </div>
+    
+    <video id="videoPlayer" loop playsinline autoplay muted></video>
     
     <div class="overlay">
         <div id="userBio" class="user-bio"></div>
@@ -46,8 +40,8 @@
 </div>
 
 <script>
-    // --- TUTAJ WKLEJ LINK Z GOOGLE SCRIPT ---
-const BOT_URL = "https://script.google.com/macros/s/AKfycbzTobg3X0phtucqRfwKJ1iXCB9nBmLyxqxo_89MUc0g6-CYjLDtfrmLbaXOyMeAgAcsZg/exec"; 
+    // --- TWÓJ LINK Z GOOGLE SCRIPT (W CUDZYSŁOWIE!) ---
+    const BOT_URL = "https://script.google.com/macros/s/AKfycbzTobg3X0phtucqRfwKJ1iXCB9nBmLyxqxo_89MUc0g6-CYjLDtfrmLbaXOyMeAgAcsZg/exec"; 
 
     let bazaFilmow = [];
     let ostatni = -1;
@@ -56,9 +50,19 @@ const BOT_URL = "https://script.google.com/macros/s/AKfycbzTobg3X0phtucqRfwKJ1iX
         try {
             const r = await fetch(BOT_URL);
             bazaFilmow = await r.json();
-            document.getElementById('loader').style.display = 'none';
-            losujFilm();
-        } catch (e) { document.getElementById('loader').innerText = "Błąd bazy!"; }
+            console.log("Pobrano filmy:", bazaFilmow);
+            
+            if (bazaFilmow.length > 0) {
+                // Wyłączamy loader i pokazujemy wideo
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('videoPlayer').style.display = 'block';
+                losujFilm();
+            } else {
+                document.getElementById('loader').innerText = "Folder na Dysku jest pusty!";
+            }
+        } catch (e) { 
+            document.getElementById('loader').innerText = "Błąd bazy! Sprawdź cudzysłowy w kodzie."; 
+        }
     }
 
     function losujFilm() {
@@ -68,19 +72,28 @@ const BOT_URL = "https://script.google.com/macros/s/AKfycbzTobg3X0phtucqRfwKJ1iX
         ostatni = n;
         const f = bazaFilmow[n];
         const p = document.getElementById('videoPlayer');
+        
         p.src = f.url;
         document.getElementById('userBio').innerText = f.bio;
         document.getElementById('videoDesc').innerText = f.opis;
-        p.play().catch(() => console.log("Kliknij ekran, by odtworzyć"));
+        
+        p.load();
+        p.play().catch(e => {
+            console.log("Wymagane kliknięcie, by ruszyło.");
+        });
     }
 
     function shareVideo() {
         const url = document.getElementById('videoPlayer').src;
         if (navigator.share) { navigator.share({ title: 'Klasowy TikTok', url: url }); }
-        else { alert("Link: " + url); }
+        else { alert("Link do filmu: " + url); }
     }
 
     window.onload = pobierzFilmy;
 </script>
+
+<style> @keyframes spin { to { transform: rotate(360deg); } } </style>
 </body>
 </html>
+
+
