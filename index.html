@@ -13,96 +13,19 @@
     <meta name="theme-color" content="#000000">
 
     <style>
-        body, html { 
-            margin: 0; 
-            padding: 0; 
-            height: 100%; 
-            background: #000; 
-            color: white; 
-            font-family: sans-serif; 
-            overflow: hidden; 
-        }
-        
-        .container { 
-            position: relative; 
-            width: 100%; 
-            max-width: 450px; 
-            height: 100vh; 
-            margin: 0 auto; 
-            background: #000; 
-        }
-        
-        /* Styl dla okna z filmem */
-        iframe { 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-            display: none; /* Ukryte, dopóki bot nie prześle danych */
-        }
-
-        .overlay { 
-            position: absolute; 
-            bottom: 40px; 
-            left: 15px; 
-            right: 80px; 
-            z-index: 10; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9); 
-            pointer-events: none; 
-        }
-        
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
+        .container { position: relative; width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; display: none; }
+        .overlay { position: absolute; bottom: 40px; left: 15px; right: 80px; z-index: 10; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); pointer-events: none; }
         .user-bio { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: #00f2ea; }
         .video-desc { font-size: 0.95rem; opacity: 0.9; }
-        
-        .side-bar { 
-            position: absolute; 
-            right: 10px; 
-            bottom: 100px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            z-index: 20; 
-        }
-        
-        .circle-btn { 
-            width: 55px; 
-            height: 55px; 
-            border-radius: 50%; 
-            border: none; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 24px; 
-            cursor: pointer; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
-        }
-        
+        .side-bar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
+        .circle-btn { width: 55px; height: 55px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s; }
+        .circle-btn:active { transform: scale(0.9); }
         .btn-shuffle { background: #ff0050; color: white; }
         .btn-share { background: #00f2ea; color: #000; }
-        
-        #loader { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            flex-direction: column; 
-            background: #111; 
-            z-index: 100; 
-        }
-        
-        .spinner { 
-            border: 4px solid #333; 
-            border-left-color: #ff0050; 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite; 
-            margin-bottom: 10px;
-        }
-        
+        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #111; z-index: 100; }
+        .spinner { border: 4px solid #333; border-left-color: #ff0050; width: 40px; height: 40px; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -128,7 +51,6 @@
 </div>
 
 <script>
-    // --- TUTAJ WKLEJ SWÓJ LINK Z GOOGLE SCRIPT ---
     const BOT_URL = "https://script.google.com/macros/s/AKfycbzTobg3X0phtucqRfwKJ1iXCB9nBmLyxqxo_89MUc0g6-CYjLDtfrmLbaXOyMeAgAcsZg/exec"; 
 
     let bazaFilmow = [];
@@ -136,10 +58,8 @@
 
     async function pobierzFilmy() {
         try {
-            console.log("Próba pobrania danych z bota...");
             const r = await fetch(BOT_URL);
             bazaFilmow = await r.json();
-            console.log("Pobrano filmy:", bazaFilmow);
             
             if (bazaFilmow.length > 0) {
                 document.getElementById('loader').style.display = 'none';
@@ -149,8 +69,7 @@
                 document.getElementById('loader').innerText = "Folder na Dysku Google jest pusty!";
             }
         } catch (e) { 
-            console.error("Błąd fetch:", e);
-            document.getElementById('loader').innerText = "Błąd bazy! Sprawdź link i wdrożenie bota."; 
+            document.getElementById('loader').innerText = "Błąd bazy! Sprawdź wdrożenie bota."; 
         }
     }
 
@@ -158,7 +77,6 @@
         if (bazaFilmow.length === 0) return;
         
         let n;
-        // Losujemy tak długo, aż trafimy na inny film niż ostatnio
         do { 
             n = Math.floor(Math.random() * bazaFilmow.length); 
         } while (n === ostatni && bazaFilmow.length > 1);
@@ -167,14 +85,15 @@
         const f = bazaFilmow[n];
         const frame = document.getElementById('videoFrame');
         
-        if (f.id) { // Tutaj sprawdzamy czy bot przysłał "id"
-            frame.src = "https://drive.google.com/file/d/" + f.id + "/preview";
-            // ... reszta kodu
-        }
-        
-        // Budujemy link podglądu z ID (kluczowe dla uniknięcia 'undefined')
         if (f.id) {
+            // Czyścimy opisy na sekundę, żeby ładnie się odświeżyły
+            document.getElementById('userBio').innerText = "";
+            document.getElementById('videoDesc').innerText = "";
+            
+            // Ustawiamy nowe źródło
             frame.src = "https://drive.google.com/file/d/" + f.id + "/preview";
+            
+            // Wypełniamy dane
             document.getElementById('userBio').innerText = f.bio;
             document.getElementById('videoDesc').innerText = f.opis;
             console.log("Ładuję film ID:", f.id);
@@ -192,7 +111,6 @@
         }
     }
 
-    // Start aplikacji po załadowaniu okna
     window.onload = pobierzFilmy;
 </script>
 
