@@ -5,18 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Klasowy TikTok 🎲</title>
     <style>
-        /* Stylistyka - Wygląd aplikacji */
         body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; font-family: sans-serif; overflow: hidden; }
         .video-container { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
-        
-        /* Obsługa wideo (Pancerny fix pod Snapchata) */
         #player-wrapper { width: 100%; height: 100%; border: none; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Dolna nakładka (Overlay) */
         .overlay { position: absolute; bottom: 40px; left: 20px; right: 80px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        
-        /* Sekcja profilówki i nazwy */
         .profile-section { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
         
         .profile-pic { 
@@ -31,10 +25,8 @@
         .owner { font-weight: bold; font-size: 1.2rem; color: white; }
         .filename { font-size: 0.9rem; opacity: 0.8; margin-top: 2px; color: #eee; }
 
-        /* Przyciski boczne */
         .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 18px; z-index: 20; }
-        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.6); transition: transform 0.1s; }
-        .btn:active { transform: scale(0.9); }
+        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.6); }
         .btn-random { background: #ff0050; }
         .btn-share { background: #555; font-size: 20px; }
     </style>
@@ -46,7 +38,7 @@
     
     <div class="overlay">
         <div class="profile-section">
-            <img class="profile-pic" src="https://drive.google.com/uc?export=view&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ" alt="">
+            <img class="profile-pic" src="https://drive.google.com/uc?export=view&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
             <div id="owner" class="owner">@Wczytywanie...</div>
         </div>
         <div id="filename" class="filename"></div>
@@ -59,7 +51,6 @@
 </div>
 
 <script>
-    // Link do Twojego bota Apps Script
     const url = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec";
     let videos = [];
     let currentVideoId = "";
@@ -76,40 +67,38 @@
 
     function nextVideo() {
         if (videos.length === 0) return;
-        
         const video = videos[Math.floor(Math.random() * videos.length)];
         currentVideoId = video.id;
         
         const wrapper = document.getElementById('player-wrapper');
-        
-        // CZYSTKA RAMKI (Naprawa zacinania na Snapchacie)
         wrapper.innerHTML = ""; 
         const newIframe = document.createElement('iframe');
-        // Dodanie ?t=... zmusza przeglądarkę do pobrania nowej wersji filmu
         newIframe.src = "https://drive.google.com/file/d/" + video.id + "/preview?t=" + Date.now();
         newIframe.allow = "autoplay";
         wrapper.appendChild(newIframe);
 
-        // --- WYCIĄGANIE NAZWY (Detektyw) ---
-        // Bot może wysyłać nazwę jako 'owner', 'author' lub 'user'. Sprawdzamy wszystko!
-        let finalName = video.owner || video.author || video.user || video.userName || "Użytkownik";
-        let finalTitle = video.name || video.filename || "Film bez nazwy";
+        // --- INTELIGENTNE WYKRYWANIE AUTORA ---
+        // 1. Sprawdzamy czy bot wysłał 'owner'
+        // 2. Jeśli nie, sprawdzamy 'author'
+        // 3. Jeśli nie, piszemy "Uczeń" (żeby nie było pusto)
+        let autor = video.owner || video.author || video.user || "Uczeń";
+        
+        // Zabezpieczenie przed napisem "undefined"
+        if (autor === "undefined" || !autor) autor = "Uczeń";
 
-        document.getElementById('owner').innerText = "@" + finalName;
-        document.getElementById('filename').innerText = finalTitle;
+        document.getElementById('owner').innerText = "@" + autor;
+        document.getElementById('filename').innerText = video.name || "Klasowe wideo";
     }
 
     function shareVideo() {
         if (!currentVideoId) return;
         const shareUrl = "https://drive.google.com/file/d/" + currentVideoId + "/view";
-        
         const tmp = document.createElement('textarea');
         tmp.value = shareUrl;
         document.body.appendChild(tmp);
         tmp.select();
         document.execCommand('copy');
         document.body.removeChild(tmp);
-        
         alert("Link skopiowany!");
     }
 
