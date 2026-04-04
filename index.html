@@ -2,124 +2,85 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klasowy TikTok</title>
-    <img src = "https://pl.bloggif.com/tmp/c2604411c1a2ca3ea001e12c46a2c0cf/text.gif?1769261505" alt = "logo">
-    <body style="background-color: red; color: yellow">...</body> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Klasowy TikTok 🎲</title>
+
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+
     <style>
-        body {
-            margin: 0;
-            background-color: #000;
-            color: white;
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .video-container {
-            width: 100vw;
-            height: 100vh;
-            scroll-snap-align: start;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-        }
-        video {
-            width: 100%;
-            height: 80%;
-            object-fit: contain; /* Film nie zostanie ucięty */
-        }
-        .info {
-            padding: 20px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-        }
-        main {
-            scroll-snap-type: y mandatory;
-            overflow-y: scroll;
-            height: 100vh;
-            width: 100%;
-        }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
+        .container { position: relative; width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; background: #111; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .overlay { position: absolute; bottom: 40px; left: 15px; right: 80px; z-index: 10; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); }
+        .user-bio { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
+        .video-desc { font-size: 0.95rem; opacity: 0.9; }
+        .side-bar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
+        .circle-btn { width: 55px; height: 55px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; }
+        .btn-shuffle { background: #ff0050; color: white; }
+        .btn-share { background: #00f2ea; color: #000; }
+        #loader { position: absolute; text-align: center; z-index: 5; }
     </style>
 </head>
 <body>
-<h1>chcesz dać like,a wyślij SMS o treści (przykład "@Uzytkownik1 - Teścik! - like") Na numer 661373971 = numer bezpłatny</h1>
-<h2>z subami ponownie , (przykład "@Uzytkownik1 - Teścik - subskrybcja")    
-<main>
-       
 
-            <iframe
-  src="https://player.cloudinary.com/embed/?cloud_name=dz7zamv9m&public_id=Klip_wideo_bez_tytu%C5%82u_Wykonano_za_pomoc%C4%85_Clipchamp_4_ovvqrd"
-  width="640"
-  height="360" 
-  style="height: auto; width: 100%; aspect-ratio: 640 / 360;"
-  allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-  allowfullscreen
-  frameborder="0"
+<div class="container">
+    <div id="loader">Ładowanie filmów...</div>
+    <video id="videoPlayer" loop playsinline></video>
+    
+    <div class="overlay">
+        <div id="userBio" class="user-bio"></div>
+        <div id="videoDesc" class="video-desc"></div>
+    </div>
 
-></iframe>
-            
-            <h3>@Franek_3</h3>
-            <p>MaZeTaLa</p>
-    <!-- Przycisk z licznikiem -->
-<button id="likeBtn" onclick="toggleLike()" style="padding: 10px 20px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: white;">
-  ❤️ Polub: <span id="likeCount">0</span>
-</button>
+    <div class="side-bar">
+        <button class="circle-btn btn-share" onclick="shareVideo()">🔗</button>
+        <button class="circle-btn btn-shuffle" onclick="losujFilm()">🎲</button>
+    </div>
+</div>
 
 <script>
-  // Klucz pod którym dane będą zapisane w przeglądarce
-  const STORAGE_KEY = 'video_like_status';
+    // --- TUTAJ WKLEJ LINK Z GOOGLE SCRIPT ---
+    const BOT_URL = "TU_WKLEJ_LINK_Z_WDROZENIA_GOOGLE_SCRIPT"; 
 
-  function initLikes() {
-    const likeCountElem = document.getElementById('likeCount');
-    const btn = document.getElementById('likeBtn');
-    
-    // Pobierz zapisany stan z localStorage
-    const isLiked = localStorage.getItem(STORAGE_KEY) === 'true';
-    
-    if (isLiked) {
-      likeCountElem.innerText = "1";
-      btn.style.background = "#ffcccc"; // Kolor po polubieniu
+    let bazaFilmow = [];
+    let ostatni = -1;
+
+    async function pobierzFilmy() {
+        try {
+            const r = await fetch(BOT_URL);
+            bazaFilmow = await r.json();
+            document.getElementById('loader').style.display = 'none';
+            losujFilm();
+        } catch (e) { document.getElementById('loader').innerText = "Błąd bazy!"; }
     }
-  }
 
-  function toggleLike() {
-    const likeCountElem = document.getElementById('likeCount');
-    const btn = document.getElementById('likeBtn');
-    const isCurrentlyLiked = localStorage.getItem(STORAGE_KEY) === 'true';
-
-    if (isCurrentlyLiked) {
-      // Usuń polubienie
-      localStorage.setItem(STORAGE_KEY, 'false');
-      likeCountElem.innerText = "0";
-      btn.style.background = "white";
-    } else {
-      // Dodaj polubienie
-      localStorage.setItem(STORAGE_KEY, 'true'); // Zapisuje stan na stałe
-      likeCountElem.innerText = "1";
-      btn.style.background = "#ffcccc";
+    function losujFilm() {
+        if (bazaFilmow.length === 0) return;
+        let n;
+        do { n = Math.floor(Math.random() * bazaFilmow.length); } while (n === ostatni && bazaFilmow.length > 1);
+        ostatni = n;
+        const f = bazaFilmow[n];
+        const p = document.getElementById('videoPlayer');
+        p.src = f.url;
+        document.getElementById('userBio').innerText = f.bio;
+        document.getElementById('videoDesc').innerText = f.opis;
+        p.play().catch(() => console.log("Kliknij ekran, by odtworzyć"));
     }
-  }
 
-  // Uruchom przy starcie strony
-  initLikes();
+    function shareVideo() {
+        const url = document.getElementById('videoPlayer').src;
+        if (navigator.share) { navigator.share({ title: 'Klasowy TikTok', url: url }); }
+        else { alert("Link: " + url); }
+    }
+
+    window.onload = pobierzFilmy;
 </script>
-
-<iframe
-  src="https://player.cloudinary.com/embed/?cloud_name=dz7zamv9m&public_id=VID_20260129_121600814_e9dpyy"
-  width="640"
-  height="360" 
-  style="height: auto; width: 100%; aspect-ratio: 640 / 360;"
-  allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-  allowfullscreen
-  frameborder="0"
-></iframe>
-            <h3>@Franek_3</h3>
-            <p>typowe babki z miasta👵🏻<p>
-        </div>
-    
-</div>
-</main>
-
 </body>
 </html>
