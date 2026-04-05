@@ -7,142 +7,174 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; font-family: sans-serif; overflow: hidden; }
         .video-container { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
-        #player-wrapper { width: 100%; height: 100%; border: none; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Nakładka dolna */
-        .overlay { position: absolute; bottom: 50px; left: 20px; right: 90px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 5px rgba(0,0,0,1); }
-        .profile-section { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-        .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #333; display: inline-block; }
-        .owner { font-weight: bold; font-size: 1.2rem; color: white; }
-        .filename { font-size: 1rem; opacity: 0.9; color: #fff; margin-top: 2px; }
+        /* Nakładka z profilem i nazwą filmu */
+        .overlay { position: absolute; bottom: 60px; left: 20px; right: 90px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        .profile-section { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; object-fit: cover; pointer-events: auto; }
+        .owner { font-weight: bold; font-size: 1.2rem; color: #00f2ea; }
+        #filename { font-size: 0.9rem; opacity: 0.9; }
 
         /* Przyciski boczne */
         .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; z-index: 20; }
-        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.6); transition: 0.2s; }
+        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.2s; }
         .btn:active { transform: scale(0.9); }
         
-        .btn-profiles { background: #00f2ea; color: black; font-size: 22px; } 
-        .btn-share { background: #555; font-size: 20px; }
-        .btn-random { background: #ff0050; }
+        .btn-upload { background: #25d366; } /* Wysyłanie */
+        .btn-profiles { background: #00f2ea; color: black; } /* Lista klasowa */
+        .btn-random { background: #ff0050; } /* Losowanie */
 
-        /* PANEL PROFILI */
-        #profiles-menu { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.95); z-index: 100; display: none; 
-            flex-direction: column; align-items: center; justify-content: center; 
+        /* MENU PROFILI (Twoja lista z filmiku) */
+        #profiles-menu {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); z-index: 1000; display: none; 
+            flex-direction: column; padding: 20px; box-sizing: border-box; text-align: center;
         }
-        .menu-title { font-size: 24px; margin-bottom: 30px; font-weight: bold; }
-        .profiles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px; max-width: 400px; }
+        .profiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; justify-items: center; overflow-y: auto; }
         .profile-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: white; transition: 0.2s; }
         .profile-item:active { transform: scale(0.9); }
-        .profile-item img { width: 75px; height: 75px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
-        .profile-item span { font-size: 13px; text-align: center; font-weight: bold; }
-        .close-menu { margin-top: 40px; background: #ff0050; color: white; padding: 12px 40px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .profile-item img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #00f2ea; margin-bottom: 8px; object-fit: cover; }
+        .profile-item span { font-weight: bold; font-size: 1rem; }
+        
+        .close-btn { background: #ff0050; border: none; color: white; padding: 12px 40px; border-radius: 25px; margin-top: 40px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+
+        /* Pasek ładowania przy wysyłaniu */
+        #loader { position: fixed; top: 0; left: 0; width: 0%; height: 6px; background: #25d366; z-index: 2000; transition: 0.3s; }
     </style>
 </head>
 <body>
 
+<div id="loader"></div>
+
 <div class="video-container">
-    <div id="player-wrapper"></div>
+    <div id="player-wrapper" style="width:100%; height:100%;"></div>
     
     <div class="overlay">
         <div class="profile-section">
             <img id="user-avatar" class="profile-pic" src="">
-            <div id="owner" class="owner">@Wczytywanie...</div>
+            <div id="owner" class="owner">@wczytywanie...</div>
         </div>
-        <div id="filename" class="filename">Wczytywanie...</div>
+        <div id="filename">Czekaj na film...</div>
     </div>
 
     <div class="side-bar">
         <button class="btn btn-profiles" onclick="toggleMenu(true)">👥</button>
-        <button class="btn btn-share" onclick="shareVideo()">🔗</button>
+        <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">📤</button>
         <button class="btn btn-random" onclick="nextVideo()">🎲</button>
     </div>
 </div>
 
+<input type="file" id="fileInput" style="display:none" accept="video/*" onchange="uploadFile(this)">
+
 <div id="profiles-menu">
-    <div class="menu-title">👥 Profile Klasy</div>
+    <h2 style="margin-top: 20px;">👥 Profile Klasy</h2>
     <div class="profiles-grid">
-        
         <a href="franek.html" class="profile-item">
-            <img src="https://drive.google.com/thumbnail?sz=w200&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
+            <img src="https://drive.google.com/thumbnail?sz=w400&id=1s0AT3NdWS_Ckd3g91HCEotQe4in0LUYt">
             <span>Franek</span>
         </a>
-        
         <a href="klasa.html" class="profile-item">
-            <img src="https://drive.google.com/thumbnail?sz=w200&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
+            <img src="https://drive.google.com/thumbnail?sz=w400&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
             <span>Klasa 2015</span>
         </a>
-
         </div>
-    <button class="close-menu" onclick="toggleMenu(false)">Powrót</button>
+    <button class="close-btn" onclick="toggleMenu(false)">ZAMKNIJ</button>
 </div>
 
 <script>
+    // TWÓJ DZIAŁAJĄCY LINK Z APPS SCRIPT
     const url = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec";
-    
-    // TWOJA LISTA - Formatowanie małe litery dla pewności
+
+    // Baza profilówek (Format: "nazwa": "ID_ZDJECIA")
     const profilePhotos = {
-        "luczakfranek2015": "1s0AT3NdWS_Ckd3g91HCEotQe4in0LUYt", 
-        "klasa 2015": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"
+        "luczakfranek2015": "1s0AT3NdWS_Ckd3g91HCEotQe4in0LUYt",
+        "klasa 2015": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ",
+        "uczen": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"
     };
 
-    const defaultAvatarID = "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"; 
     let videos = [];
-    let currentVideoId = "";
 
-    function toggleMenu(show) {
-        document.getElementById('profiles-menu').style.display = show ? 'flex' : 'none';
-    }
+    // Otwieranie/Zamykanie listy
+    function toggleMenu(show) { document.getElementById('profiles-menu').style.display = show ? 'flex' : 'none'; }
 
+    // Pobieranie filmów z bota
     async function loadVideos() {
         try {
-            const response = await fetch(url);
-            videos = await response.json();
-            if (videos.length > 0) nextVideo();
-        } catch (e) { document.getElementById('owner').innerText = "@Błąd"; }
+            const resp = await fetch(url);
+            videos = await resp.json();
+            if (videos.length > 0) {
+                nextVideo();
+            } else {
+                document.getElementById('owner').innerText = "Brak filmów";
+                document.getElementById('filename').innerText = "Wrzuć coś zielonym przyciskiem!";
+            }
+        } catch (e) {
+            console.error("Błąd połączenia z botem");
+        }
     }
 
+    // Wyświetlanie losowego filmu (Pancerny format dla Firefox)
     function nextVideo() {
         if (videos.length === 0) return;
         const video = videos[Math.floor(Math.random() * videos.length)];
-        currentVideoId = video.id;
         
-        const wrapper = document.getElementById('player-wrapper');
-        wrapper.innerHTML = ""; 
-        const newIframe = document.createElement('iframe');
-        newIframe.src = "https://drive.google.com/file/d/" + video.id + "/preview?t=" + Date.now();
-        newIframe.allow = "autoplay";
-        wrapper.appendChild(newIframe);
+        // Film
+        document.getElementById('player-wrapper').innerHTML = `<iframe src="https://drive.google.com/file/d/${video.id}/preview" allow="autoplay"></iframe>`;
+        
+        // Tekst
+        const cleanOwner = video.owner.toLowerCase().trim();
+        document.getElementById('owner').innerText = "@" + video.owner;
+        document.getElementById('filename').innerText = video.name;
 
-        const rawOwner = video.owner || "Uczeń";
-        document.getElementById('owner').innerText = "@" + rawOwner;
-        document.getElementById('filename').innerText = video.name || "Film";
-
-        // ROZPOZNAWANIE (z małych liter dla Firefoxa i Twojej wygody)
-        const avatarImg = document.getElementById('user-avatar');
-        const searchName = rawOwner.toLowerCase().trim();
-        let photoID = profilePhotos[searchName] || defaultAvatarID;
-
-        // FORMAT ZDJĘCIOWY DLA FIREFOXA
-        avatarImg.src = "https://drive.google.com/thumbnail?sz=w500&id=" + photoID;
+        // Zdjęcie profilowe (Pancerny format thumbnail)
+        let photoID = profilePhotos[cleanOwner] || "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ";
+        document.getElementById('user-avatar').src = `https://drive.google.com/thumbnail?sz=w500&id=${photoID}`;
     }
 
-    function shareVideo() {
-        if (!currentVideoId) return;
-        const shareUrl = "https://drive.google.com/file/d/" + currentVideoId + "/view";
-        const tmp = document.createElement('textarea');
-        tmp.value = shareUrl;
-        document.body.appendChild(tmp);
-        tmp.select();
-        document.execCommand('copy');
-        document.body.removeChild(tmp);
-        alert("Skopiowano link!");
+    // WYSYŁANIE FILMU (Bez logowania!)
+    async function uploadFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        let nick = prompt("Jak się nazywasz? (Wpisz np. luczakfranek2015)");
+        if (!nick) return;
+
+        // Start ładowania
+        const loader = document.getElementById('loader');
+        loader.style.width = "40%";
+
+        const reader = new FileReader();
+        reader.onload = async function() {
+            const base64 = reader.result.split(',')[1];
+            const finalName = nick.trim() + " - " + file.name;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        base64: base64,
+                        mimetype: file.type,
+                        filename: finalName
+                    })
+                });
+
+                loader.style.width = "100%";
+                setTimeout(() => { loader.style.width = "0%"; }, 1000);
+
+                alert("Ezzzz! Twój film leci na Dysk!");
+                // Odświeżamy listę, żeby zobaczyć nowy film
+                loadVideos();
+            } catch (e) {
+                alert("Coś nie pykło przy wysyłaniu.");
+                loader.style.width = "0%";
+            }
+        };
+        reader.readAsDataURL(file);
     }
 
+    // Start strony
     window.onload = loadVideos;
 </script>
-
 </body>
 </html>
