@@ -10,21 +10,35 @@
         #player-wrapper { width: 100%; height: 100%; border: none; }
         iframe { width: 100%; height: 100%; border: none; }
 
+        /* Nakładka dolna */
         .overlay { position: absolute; bottom: 50px; left: 20px; right: 90px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 5px rgba(0,0,0,1); }
         .profile-section { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-        
-        .profile-pic { 
-            width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; 
-            object-fit: cover; background: #333; display: inline-block;
-        }
-        
+        .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #333; display: inline-block; }
         .owner { font-weight: bold; font-size: 1.2rem; color: white; }
         .filename { font-size: 1rem; opacity: 0.9; color: #fff; margin-top: 2px; }
 
-        .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
-        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.6); }
-        .btn-random { background: #ff0050; }
+        /* Przyciski boczne */
+        .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; z-index: 20; }
+        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.6); transition: 0.2s; }
+        .btn:active { transform: scale(0.9); }
+        
+        .btn-profiles { background: #00f2ea; color: black; font-size: 22px; } 
         .btn-share { background: #555; font-size: 20px; }
+        .btn-random { background: #ff0050; }
+
+        /* PANEL PROFILI */
+        #profiles-menu { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); z-index: 100; display: none; 
+            flex-direction: column; align-items: center; justify-content: center; 
+        }
+        .menu-title { font-size: 24px; margin-bottom: 30px; font-weight: bold; }
+        .profiles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px; max-width: 400px; }
+        .profile-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: white; transition: 0.2s; }
+        .profile-item:active { transform: scale(0.9); }
+        .profile-item img { width: 75px; height: 75px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
+        .profile-item span { font-size: 13px; text-align: center; font-weight: bold; }
+        .close-menu { margin-top: 40px; background: #ff0050; color: white; padding: 12px 40px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -41,24 +55,46 @@
     </div>
 
     <div class="side-bar">
+        <button class="btn btn-profiles" onclick="toggleMenu(true)">👥</button>
         <button class="btn btn-share" onclick="shareVideo()">🔗</button>
         <button class="btn btn-random" onclick="nextVideo()">🎲</button>
     </div>
 </div>
 
+<div id="profiles-menu">
+    <div class="menu-title">👥 Profile Klasy</div>
+    <div class="profiles-grid">
+        
+        <a href="franek.html" class="profile-item">
+            <img src="https://drive.google.com/thumbnail?sz=w200&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
+            <span>Franek</span>
+        </a>
+        
+        <a href="klasa.html" class="profile-item">
+            <img src="https://drive.google.com/thumbnail?sz=w200&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
+            <span>Klasa 2015</span>
+        </a>
+
+        </div>
+    <button class="close-menu" onclick="toggleMenu(false)">Powrót</button>
+</div>
+
 <script>
     const url = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec";
     
-    // --- TUTAJ WPISUJESZ TYLKO ID ZDJĘCIA ---
+    // TWOJA LISTA - Formatowanie małe litery dla pewności
     const profilePhotos = {
-        "klasa 2015": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ", 
-        "luczakfranek2015": "1s0AT3NdWS_Ckd3g91HCEotQe4in0LUYt"
+        "franek łuczak": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ", 
+        "klasa 2015": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"
     };
 
     const defaultAvatarID = "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"; 
-
     let videos = [];
     let currentVideoId = "";
+
+    function toggleMenu(show) {
+        document.getElementById('profiles-menu').style.display = show ? 'flex' : 'none';
+    }
 
     async function loadVideos() {
         try {
@@ -84,9 +120,12 @@
         document.getElementById('owner').innerText = "@" + rawOwner;
         document.getElementById('filename').innerText = video.name || "Film";
 
-        // TO JEST TEN LINK, KTÓREGO POWINIENEM UŻYĆ OD RAZU:
+        // ROZPOZNAWANIE (z małych liter dla Firefoxa i Twojej wygody)
         const avatarImg = document.getElementById('user-avatar');
-        let photoID = profilePhotos[rawOwner] || defaultAvatarID;
+        const searchName = rawOwner.toLowerCase().trim();
+        let photoID = profilePhotos[searchName] || defaultAvatarID;
+
+        // FORMAT ZDJĘCIOWY DLA FIREFOXA
         avatarImg.src = "https://drive.google.com/thumbnail?sz=w500&id=" + photoID;
     }
 
