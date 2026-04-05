@@ -80,7 +80,7 @@
 </div>
 
 <script>
-    // TWOJA DZIAŁAJĄCA MASZYNA:
+    // TWÓJ DZIAŁAJĄCY LINK:
     const url = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec";
 
     const profilePhotos = {
@@ -100,11 +100,12 @@
             if (videos.length > 0) {
                 nextVideo();
             } else {
-                document.getElementById('owner').innerText = "Folder jest pusty!";
-                document.getElementById('filename').innerText = "Wrzuć pierwszy film przyciskiem 📤";
+                document.getElementById('owner').innerText = "Pusto na Dysku!";
+                document.getElementById('filename').innerText = "Wrzuć coś zielonym przyciskiem 📤";
             }
         } catch (e) { 
-            alert("Błąd połączenia! Odśwież stronę."); 
+            console.error(e);
+            alert("Błąd połączenia! Sprawdź czy link w kodzie jest poprawny."); 
         }
     }
 
@@ -115,8 +116,8 @@
         
         document.getElementById('player-wrapper').innerHTML = `<iframe src="https://drive.google.com/file/d/${video.id}/preview" allow="autoplay"></iframe>`;
         
-        const cleanOwner = video.owner.toLowerCase().trim();
-        document.getElementById('owner').innerText = "@" + video.owner;
+        const cleanOwner = (video.owner || "nieznany").toLowerCase().trim();
+        document.getElementById('owner').innerText = "@" + (video.owner || "Anonim");
         document.getElementById('filename').innerText = video.name;
 
         let photoID = profilePhotos[cleanOwner] || "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ";
@@ -139,8 +140,8 @@
                     body: JSON.stringify({ base64: base64, mimetype: file.type, filename: nick.trim() + " - " + file.name })
                 });
                 document.getElementById('loader-bar').style.width = "100%";
-                alert("Ezzzz! Wysłano!");
-                setTimeout(() => { location.reload(); }, 1000);
+                alert("Ezzzz! Wysłano! Film pojawi się po odświeżeniu.");
+                location.reload();
             } catch (e) { alert("Błąd wysyłania!"); }
         };
         reader.readAsDataURL(file);
