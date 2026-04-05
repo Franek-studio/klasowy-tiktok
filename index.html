@@ -10,7 +10,7 @@
         iframe { width: 100%; height: 100%; border: none; }
 
         /* Nakładka dolna */
-        .overlay { position: absolute; bottom: 60px; left: 20px; right: 90px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        .overlay { position: absolute; bottom: 65px; left: 20px; right: 90px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
         .profile-section { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; pointer-events: auto; }
         .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
         .owner { font-weight: bold; color: #00f2ea; font-size: 1.1rem; }
@@ -22,7 +22,7 @@
         
         .btn-profiles { background: #00f2ea; color: black; }
         .btn-upload { background: #25d366; }
-        .btn-share { background: #555; font-size: 20px; } /* PRZYCISK UDOSTĘPNIANIA */
+        .btn-share { background: #555; font-size: 20px; }
         .btn-random { background: #ff0050; }
 
         /* Menu Profile Klasy */
@@ -36,13 +36,12 @@
         .profile-item img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #00f2ea; margin-bottom: 8px; object-fit: cover; }
         
         .close-btn { background: #ff0050; border: none; color: white; padding: 10px 30px; border-radius: 20px; margin-top: 30px; cursor: pointer; font-weight: bold; }
-
-        #loader { position: fixed; top: 0; left: 0; width: 0%; height: 5px; background: #25d366; z-index: 2000; transition: 0.3s; }
+        #loader-bar { position: fixed; top: 0; left: 0; width: 0%; height: 5px; background: #25d366; z-index: 2000; transition: 0.3s; }
     </style>
 </head>
 <body>
 
-<div id="loader"></div>
+<div id="loader-bar"></div>
 
 <div class="video-container">
     <div id="player-wrapper" style="width:100%; height:100%;"></div>
@@ -81,7 +80,7 @@
 </div>
 
 <script>
-    // TWÓJ DZIAŁAJĄCY LINK:
+    // TWOJA DZIAŁAJĄCA MASZYNA:
     const url = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec";
 
     const profilePhotos = {
@@ -96,19 +95,16 @@
 
     async function loadVideos() {
         try {
-            console.log("Ładowanie filmów...");
             const resp = await fetch(url);
             videos = await resp.json();
-            console.log("Pobrano filmy:", videos);
             if (videos.length > 0) {
                 nextVideo();
             } else {
                 document.getElementById('owner').innerText = "Folder jest pusty!";
-                document.getElementById('filename').innerText = "Wrzuć film przyciskiem 📤";
+                document.getElementById('filename').innerText = "Wrzuć pierwszy film przyciskiem 📤";
             }
         } catch (e) { 
-            console.error("Błąd ładowania:", e);
-            alert("Błąd połączenia z botem!"); 
+            alert("Błąd połączenia! Odśwież stronę."); 
         }
     }
 
@@ -117,14 +113,12 @@
         const video = videos[Math.floor(Math.random() * videos.length)];
         currentVideoId = video.id;
         
-        // Format Firefox Preview
         document.getElementById('player-wrapper').innerHTML = `<iframe src="https://drive.google.com/file/d/${video.id}/preview" allow="autoplay"></iframe>`;
         
         const cleanOwner = video.owner.toLowerCase().trim();
         document.getElementById('owner').innerText = "@" + video.owner;
         document.getElementById('filename').innerText = video.name;
 
-        // Zdjęcie profilowe
         let photoID = profilePhotos[cleanOwner] || "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ";
         document.getElementById('user-avatar').src = `https://drive.google.com/thumbnail?sz=w500&id=${photoID}`;
     }
@@ -132,44 +126,34 @@
     async function uploadFile(input) {
         const file = input.files[0];
         if (!file) return;
-        let nick = prompt("Jak się nazywasz? (Wpisz np. luczakfranek2015)");
+        let nick = prompt("Podaj swój nick (np. luczakfranek2015):");
         if (!nick) return;
 
-        document.getElementById('loader').style.width = "50%";
+        document.getElementById('loader-bar').style.width = "50%";
         const reader = new FileReader();
         reader.onload = async function() {
             const base64 = reader.result.split(',')[1];
             try {
-                const response = await fetch(url, {
+                await fetch(url, {
                     method: 'POST',
                     body: JSON.stringify({ base64: base64, mimetype: file.type, filename: nick.trim() + " - " + file.name })
                 });
-                document.getElementById('loader').style.width = "100%";
-                alert("Ezzzz! Wysłano! Film pojawi się za chwilę.");
-                setTimeout(() => { location.reload(); }, 1500);
+                document.getElementById('loader-bar').style.width = "100%";
+                alert("Ezzzz! Wysłano!");
+                setTimeout(() => { location.reload(); }, 1000);
             } catch (e) { alert("Błąd wysyłania!"); }
         };
         reader.readAsDataURL(file);
     }
 
-    // FUNKCJA UDOSTĘPNIANIA (Naprawiona!)
     function shareVideo() {
-        if (!currentVideoId) {
-            alert("Najpierw załaduj film!");
-            return;
-        }
-        const videoLink = "https://drive.google.com/file/d/" + currentVideoId + "/view";
-        
-        // Próba użycia systemowego udostępniania, jeśli nie to kopiuj do schowka
+        if (!currentVideoId) return;
+        const link = "https://drive.google.com/file/d/" + currentVideoId + "/view";
         if (navigator.share) {
-            navigator.share({
-                title: 'Klasowy TikTok',
-                text: 'Zobacz ten film!',
-                url: videoLink,
-            }).catch(console.error);
+            navigator.share({ url: link }).catch(() => {});
         } else {
             const el = document.createElement('textarea');
-            el.value = videoLink;
+            el.value = link;
             document.body.appendChild(el);
             el.select();
             document.execCommand('copy');
