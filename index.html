@@ -9,38 +9,35 @@
         .video-container { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Nakładka z profilem i nazwą filmu */
+        /* Nakładka dolna */
         .overlay { position: absolute; bottom: 60px; left: 20px; right: 90px; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        .profile-section { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; object-fit: cover; pointer-events: auto; }
-        .owner { font-weight: bold; font-size: 1.2rem; color: #00f2ea; }
-        #filename { font-size: 0.9rem; opacity: 0.9; }
+        .profile-section { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; pointer-events: auto; }
+        .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
+        .owner { font-weight: bold; color: #00f2ea; font-size: 1.1rem; }
 
         /* Przyciski boczne */
         .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; z-index: 20; }
-        .btn { width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.2s; }
+        .btn { width: 55px; height: 55px; border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: 0.2s; }
         .btn:active { transform: scale(0.9); }
         
-        .btn-upload { background: #25d366; } /* Wysyłanie */
-        .btn-profiles { background: #00f2ea; color: black; } /* Lista klasowa */
-        .btn-random { background: #ff0050; } /* Losowanie */
+        .btn-profiles { background: #00f2ea; color: black; }
+        .btn-upload { background: #25d366; }
+        .btn-share { background: #555; font-size: 20px; } /* PRZYCISK UDOSTĘPNIANIA */
+        .btn-random { background: #ff0050; }
 
-        /* MENU PROFILI (Twoja lista z filmiku) */
+        /* Menu Profile Klasy */
         #profiles-menu {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.95); z-index: 1000; display: none; 
             flex-direction: column; padding: 20px; box-sizing: border-box; text-align: center;
         }
         .profiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; justify-items: center; overflow-y: auto; }
-        .profile-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: white; transition: 0.2s; }
-        .profile-item:active { transform: scale(0.9); }
-        .profile-item img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #00f2ea; margin-bottom: 8px; object-fit: cover; }
-        .profile-item span { font-weight: bold; font-size: 1rem; }
+        .profile-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: white; }
+        .profile-item img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #00f2ea; margin-bottom: 8px; object-fit: cover; }
         
-        .close-btn { background: #ff0050; border: none; color: white; padding: 12px 40px; border-radius: 25px; margin-top: 40px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        .close-btn { background: #ff0050; border: none; color: white; padding: 10px 30px; border-radius: 20px; margin-top: 30px; cursor: pointer; font-weight: bold; }
 
-        /* Pasek ładowania przy wysyłaniu */
-        #loader { position: fixed; top: 0; left: 0; width: 0%; height: 6px; background: #25d366; z-index: 2000; transition: 0.3s; }
+        #loader { position: fixed; top: 0; left: 0; width: 0%; height: 5px; background: #25d366; z-index: 2000; transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -51,16 +48,17 @@
     <div id="player-wrapper" style="width:100%; height:100%;"></div>
     
     <div class="overlay">
-        <div class="profile-section">
+        <div class="profile-section" onclick="toggleMenu(true)">
             <img id="user-avatar" class="profile-pic" src="">
             <div id="owner" class="owner">@wczytywanie...</div>
         </div>
-        <div id="filename">Czekaj na film...</div>
+        <div id="filename">...</div>
     </div>
 
     <div class="side-bar">
         <button class="btn btn-profiles" onclick="toggleMenu(true)">👥</button>
         <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">📤</button>
+        <button class="btn btn-share" onclick="shareVideo()">🔗</button>
         <button class="btn btn-random" onclick="nextVideo()">🎲</button>
     </div>
 </div>
@@ -68,7 +66,7 @@
 <input type="file" id="fileInput" style="display:none" accept="video/*" onchange="uploadFile(this)">
 
 <div id="profiles-menu">
-    <h2 style="margin-top: 20px;">👥 Profile Klasy</h2>
+    <h2>👥 Profile Klasy</h2>
     <div class="profiles-grid">
         <a href="franek.html" class="profile-item">
             <img src="https://drive.google.com/thumbnail?sz=w400&id=1s0AT3NdWS_Ckd3g91HCEotQe4in0LUYt">
@@ -78,102 +76,108 @@
             <img src="https://drive.google.com/thumbnail?sz=w400&id=1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ">
             <span>Klasa 2015</span>
         </a>
-        </div>
-    <button class="close-btn" onclick="toggleMenu(false)">ZAMKNIJ</button>
+    </div>
+    <button class="close-btn" onclick="toggleMenu(false)">POWRÓT</button>
 </div>
 
 <script>
-    // TWÓJ DZIAŁAJĄCY LINK Z APPS SCRIPT
+    // TWÓJ DZIAŁAJĄCY LINK:
     const url = "https://script.google.com/macros/s/AKfycbwFlyCsAm_1p9WSssyk-b-pYRGxnsAJ7SDNvhV_nHkKgglcBhcNih4hW9WAbnmlVbFNjQ/exec";
 
-    // Baza profilówek (Format: "nazwa": "ID_ZDJECIA")
     const profilePhotos = {
         "luczakfranek2015": "1s0AT3NdWS_Ckd3g91HCEotQe4in0LUYt",
-        "klasa 2015": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ",
-        "uczen": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"
+        "klasa 2015": "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ"
     };
 
     let videos = [];
+    let currentVideoId = "";
 
-    // Otwieranie/Zamykanie listy
     function toggleMenu(show) { document.getElementById('profiles-menu').style.display = show ? 'flex' : 'none'; }
 
-    // Pobieranie filmów z bota
     async function loadVideos() {
         try {
+            console.log("Ładowanie filmów...");
             const resp = await fetch(url);
             videos = await resp.json();
+            console.log("Pobrano filmy:", videos);
             if (videos.length > 0) {
                 nextVideo();
             } else {
-                document.getElementById('owner').innerText = "Brak filmów";
-                document.getElementById('filename').innerText = "Wrzuć coś zielonym przyciskiem!";
+                document.getElementById('owner').innerText = "Folder jest pusty!";
+                document.getElementById('filename').innerText = "Wrzuć film przyciskiem 📤";
             }
-        } catch (e) {
-            console.error("Błąd połączenia z botem");
+        } catch (e) { 
+            console.error("Błąd ładowania:", e);
+            alert("Błąd połączenia z botem!"); 
         }
     }
 
-    // Wyświetlanie losowego filmu (Pancerny format dla Firefox)
     function nextVideo() {
         if (videos.length === 0) return;
         const video = videos[Math.floor(Math.random() * videos.length)];
+        currentVideoId = video.id;
         
-        // Film
+        // Format Firefox Preview
         document.getElementById('player-wrapper').innerHTML = `<iframe src="https://drive.google.com/file/d/${video.id}/preview" allow="autoplay"></iframe>`;
         
-        // Tekst
         const cleanOwner = video.owner.toLowerCase().trim();
         document.getElementById('owner').innerText = "@" + video.owner;
         document.getElementById('filename').innerText = video.name;
 
-        // Zdjęcie profilowe (Pancerny format thumbnail)
+        // Zdjęcie profilowe
         let photoID = profilePhotos[cleanOwner] || "1qlyomGfB3xiLOuIz1o6TE1-8O19J4TsZ";
         document.getElementById('user-avatar').src = `https://drive.google.com/thumbnail?sz=w500&id=${photoID}`;
     }
 
-    // WYSYŁANIE FILMU (Bez logowania!)
     async function uploadFile(input) {
         const file = input.files[0];
         if (!file) return;
-
         let nick = prompt("Jak się nazywasz? (Wpisz np. luczakfranek2015)");
         if (!nick) return;
 
-        // Start ładowania
-        const loader = document.getElementById('loader');
-        loader.style.width = "40%";
-
+        document.getElementById('loader').style.width = "50%";
         const reader = new FileReader();
         reader.onload = async function() {
             const base64 = reader.result.split(',')[1];
-            const finalName = nick.trim() + " - " + file.name;
-
             try {
                 const response = await fetch(url, {
                     method: 'POST',
-                    body: JSON.stringify({
-                        base64: base64,
-                        mimetype: file.type,
-                        filename: finalName
-                    })
+                    body: JSON.stringify({ base64: base64, mimetype: file.type, filename: nick.trim() + " - " + file.name })
                 });
-
-                loader.style.width = "100%";
-                setTimeout(() => { loader.style.width = "0%"; }, 1000);
-
-                alert("Ezzzz! Twój film leci na Dysk!");
-                // Odświeżamy listę, żeby zobaczyć nowy film
-                loadVideos();
-            } catch (e) {
-                alert("Coś nie pykło przy wysyłaniu.");
-                loader.style.width = "0%";
-            }
+                document.getElementById('loader').style.width = "100%";
+                alert("Ezzzz! Wysłano! Film pojawi się za chwilę.");
+                setTimeout(() => { location.reload(); }, 1500);
+            } catch (e) { alert("Błąd wysyłania!"); }
         };
         reader.readAsDataURL(file);
     }
 
-    // Start strony
+    // FUNKCJA UDOSTĘPNIANIA (Naprawiona!)
+    function shareVideo() {
+        if (!currentVideoId) {
+            alert("Najpierw załaduj film!");
+            return;
+        }
+        const videoLink = "https://drive.google.com/file/d/" + currentVideoId + "/view";
+        
+        // Próba użycia systemowego udostępniania, jeśli nie to kopiuj do schowka
+        if (navigator.share) {
+            navigator.share({
+                title: 'Klasowy TikTok',
+                text: 'Zobacz ten film!',
+                url: videoLink,
+            }).catch(console.error);
+        } else {
+            const el = document.createElement('textarea');
+            el.value = videoLink;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert("Link skopiowany do schowka! 🔗");
+        }
+    }
+
     window.onload = loadVideos;
 </script>
 </body>
